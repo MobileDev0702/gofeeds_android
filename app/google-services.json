@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1086774951822",
+    "firebase_url": "https://gofeds-8ddce.firebaseio.com",
+    "project_id": "gofeds-8ddce",
+    "storage_bucket": "gofeds-8ddce.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086774951822:android:8da709cf6e4c05bbac2edf",
+        "android_client_info": {
+          "package_name": "com.stackrage.gofeds"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1086774951822-76betpv7lk8j2jtsn9nanadt654rkb2r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpFJP5ysAC5lOsIJcc2inKCEWko4gLcPI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1086774951822-76betpv7lk8j2jtsn9nanadt654rkb2r.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1086774951822-i15lsuqo627e6t1nbp91ob5gppnrth5j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.stackrage.gofeds",
+                "app_store_id": "0702320"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

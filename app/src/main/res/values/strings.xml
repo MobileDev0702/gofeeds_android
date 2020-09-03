@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">FedsConnect</string>
+    <string name="title_feed">News Feed</string>
+    <string name="title_connection">Connections</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_forum">Forum</string>
+</resources>
