@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,7 +46,7 @@ public class ChatDetailActivity extends AppCompatActivity {
 
     private DatabaseReference dbRef;
     private String roomId, receiverId, receiverUser;
-    private String myId, username;
+    private String myId;
     private Integer isUser;
 
     @Override
@@ -136,6 +139,17 @@ public class ChatDetailActivity extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(linearLayoutManager);
     }
 
+    private Boolean checkGooglePlayServices() {
+        Integer status = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
+        if (status != ConnectionResult.SUCCESS) {
+            Log.d("TAG", "Error");
+            return false;
+        } else {
+            Log.d("TAG", "Google Play Services Updated!");
+            return true;
+        }
+    }
+
     private void onClickBackBtn() {
         iv_back_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,6 +167,12 @@ public class ChatDetailActivity extends AppCompatActivity {
                     DatabaseReference messageRef = dbRef.child("messages").child("conversations").child(roomId).push();
                     setConversationDB(messageRef);
                     et_bottom_comment.setText("");
+                    if (checkGooglePlayServices()) {
+
+                    } else {
+                        Log.d("TAG", "Device doesn't have google play services!");
+                        Toast.makeText(ChatDetailActivity.this, "Device doesn't have google play services!", Toast.LENGTH_LONG).show();
+                    }
                 } else {
                     Toast.makeText(ChatDetailActivity.this, "Write your message!", Toast.LENGTH_SHORT).show();
                 }

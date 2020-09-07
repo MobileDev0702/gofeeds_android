@@ -152,7 +152,7 @@ public class UserProfileActivity extends AppCompatActivity {
                             for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                                 String receiverId = dataSnapshot.child("receiverId").getValue().toString();
                                 String senderId = dataSnapshot.child("senderId").getValue().toString();
-                                if ((senderId.equals(userId) && receiverId.equals(myId)) || (senderId.equals(senderId) && receiverId.equals(userId))) {
+                                if ((senderId.equals(userId) && receiverId.equals(myId)) || (senderId.equals(myId) && receiverId.equals(userId))) {
                                     roomId = dataSnapshot.child("conversationId").getValue().toString();
                                 } else {
                                     roomCnt ++;
@@ -188,7 +188,7 @@ public class UserProfileActivity extends AppCompatActivity {
         Map<String, Object> chatUserResult = new HashMap<>();
         chatUserResult.put("chatDeletedForUser", 0);
         chatUserResult.put("conversationId", roomRef.getKey());
-        chatUserResult.put("creatorId", myId);
+        chatUserResult.put("creatorId", Integer.parseInt(myId));
         chatUserResult.put("creatorUser", myname);
         chatUserResult.put("deleted", 0);
         chatUserResult.put("isRead", 1);
@@ -196,16 +196,16 @@ public class UserProfileActivity extends AppCompatActivity {
         chatUserResult.put("lastMessageTimeStamp", ServerValue.TIMESTAMP);
         chatUserResult.put("messageId", "");
         chatUserResult.put("otherConversationId", "");
-        chatUserResult.put("receiverId", userId);
+        chatUserResult.put("receiverId", Integer.parseInt(userId));
         chatUserResult.put("receiverUser", username);
-        chatUserResult.put("senderId", myId);
+        chatUserResult.put("senderId", Integer.parseInt(myId));
         chatUserResult.put("timestamp", ServerValue.TIMESTAMP);
         roomRef.updateChildren(chatUserResult);
 
         Map<String, Object> chatOppoResult = new HashMap<>();
         chatOppoResult.put("chatDeletedForUser", 0);
         chatOppoResult.put("conversationId", roomRef.getKey());
-        chatOppoResult.put("creatorId", myId);
+        chatOppoResult.put("creatorId", Integer.parseInt(myId));
         chatOppoResult.put("creatorUser", myname);
         chatOppoResult.put("deleted", 0);
         chatOppoResult.put("isRead", 1);
@@ -213,9 +213,9 @@ public class UserProfileActivity extends AppCompatActivity {
         chatOppoResult.put("lastMessageTimeStamp", ServerValue.TIMESTAMP);
         chatOppoResult.put("messageId", "");
         chatOppoResult.put("otherConversationId", "");
-        chatOppoResult.put("receiverId", myId);
+        chatOppoResult.put("receiverId", Integer.parseInt(myId));
         chatOppoResult.put("receiverUser", myname);
-        chatOppoResult.put("senderId", userId);
+        chatOppoResult.put("senderId", Integer.parseInt(userId));
         chatOppoResult.put("timestamp", ServerValue.TIMESTAMP);
         dbRef.child("messages").child("chatUsers").child(userId).child(roomRef.getKey()).updateChildren(chatOppoResult);
     }

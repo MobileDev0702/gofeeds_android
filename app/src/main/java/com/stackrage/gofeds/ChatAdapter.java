@@ -18,22 +18,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     private Context context;
     private LayoutInflater inflater;
-    private ArrayList<Integer> photoList;
-    private ArrayList<String> receiverIdList;
-    private ArrayList<String> usernameList;
-    private ArrayList<String> lastchatList;
-    private ArrayList<String> timeList;
-    private ArrayList<String> roomIdList;
+    private ArrayList<UserInfo> userInfos;
 
-    public ChatAdapter(Context ctx, ArrayList<Integer> photos, ArrayList<String> receiverIds, ArrayList<String> names, ArrayList<String> lastchats, ArrayList<String> times, ArrayList<String> roomids) {
+    public ChatAdapter(Context ctx, ArrayList<UserInfo> info) {
         inflater = LayoutInflater.from(ctx);
         this.context = ctx;
-        this.photoList = photos;
-        this.receiverIdList = receiverIds;
-        this.usernameList = names;
-        this.lastchatList = lastchats;
-        this.timeList = times;
-        this.roomIdList = roomids;
+        this.userInfos = info;
     }
 
     @NonNull
@@ -49,16 +39,16 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
     public void onBindViewHolder(@NonNull ChatAdapter.MyViewHolder holder, final int position) {
 //        Picasso.get().load(photoList.get(position)).into(holder.image);
         holder.image.setImageResource(R.drawable.user);
-        holder.tv_username.setText(usernameList.get(position));
-        holder.tv_lastchat.setText(lastchatList.get(position));
-        holder.tv_time.setText(timeList.get(position));
+        holder.tv_username.setText(userInfos.get(position).getName());
+        holder.tv_lastchat.setText(userInfos.get(position).getLastMsg());
+        holder.tv_time.setText(userInfos.get(position).getTime());
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, ChatDetailActivity.class);
-                intent.putExtra("RoomId", roomIdList.get(position));
-                intent.putExtra("ReceiverId", receiverIdList.get(position));
-                intent.putExtra("ReceiverUser", usernameList.get(position));
+                intent.putExtra("RoomId", userInfos.get(position).getRoomId());
+                intent.putExtra("ReceiverId", userInfos.get(position).getReceiverId());
+                intent.putExtra("ReceiverUser", userInfos.get(position).getName());
                 context.startActivity(intent);
             }
         });
@@ -66,7 +56,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     @Override
     public int getItemCount() {
-        return photoList.size();
+        return userInfos.size();
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {

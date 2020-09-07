@@ -1,15 +1,16 @@
 package com.stackrage.gofeds;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.provider.CallLog;
+import android.view.View;
+import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -19,7 +20,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -28,12 +30,8 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView chatRecyclerView;
     private ChatAdapter chatAdapter;
     private ImageView iv_back_btn;
-    private ArrayList<Integer> photoList = new ArrayList<>();
-    private ArrayList<String> receiverIdList = new ArrayList<>();
-    private ArrayList<String> nameList = new ArrayList<>();
-    private ArrayList<String> lastchatList = new ArrayList<>();
-    private ArrayList<String> timeList = new ArrayList<>();
-    private ArrayList<String> roomId = new ArrayList<>();
+
+    private ArrayList<UserInfo> userInfos = new ArrayList<>();
 
     private DatabaseReference dbRef;
     private LoadingIndicator loadingIndicator;
@@ -71,13 +69,17 @@ public class ChatActivity extends AppCompatActivity {
                     String timestamp = chatSnapshot.child("lastMessageTimeStamp").getValue().toString();
                     SimpleDateFormat sfd = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
                     String date = sfd.format(Long.parseLong(timestamp));
-                    photoList.add(R.drawable.user);
-                    receiverIdList.add(receiverId);
-                    nameList.add(receiverUser);
-                    lastchatList.add(lastMsg);
-                    timeList.add(date);
-                    roomId.add(conversationId);
+
+                    UserInfo info = new UserInfo(R.drawable.user, receiverId, receiverUser, lastMsg, date, conversationId, Long.parseLong(timestamp));
+                    userInfos.add(info);
                 }
+                Collections.sort(userInfos, new Comparator<UserInfo>() {
+
+                    @Override
+                    public int compare(UserInfo o1, UserInfo o2) {
+                        return (int)(o2.getTimestamp()-o1.getTimestamp());
+                    }
+                });
                 chatAdapter.notifyDataSetChanged();
                 loadingIndicator.hideProgress();
             }
@@ -91,7 +93,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setChatRecyclerView() {
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
-        chatAdapter = new ChatAdapter(this, photoList, receiverIdList, nameList, lastchatList, timeList, roomId);
+        chatAdapter = new ChatAdapter(this, userInfos);
         chatRecyclerView.setAdapter(chatAdapter);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     }

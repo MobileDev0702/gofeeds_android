@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -24,6 +25,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.JsonObject;
@@ -315,98 +317,124 @@ public class SignupActivity extends AppCompatActivity {
                     return;
                 }
 
-                mAuth.createUserWithEmailAndPassword(email, pwd).addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
+                mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
                     @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(SignupActivity.this, "Sign up Failed: " + task.getException().toString(), Toast.LENGTH_LONG).show();
-                        } else {
-                            Map<String, Object> result = new HashMap<>();
-                            result.put("email", email);
-                            result.put("name", username);
-
-                            dbRef.child("users").child(mAuth.getCurrentUser().getUid()).updateChildren(result);
-
-                            ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
-                            RequestBody requestEmail = RequestBody.create(MediaType.parse("multipart/form-data"), email);
-                            RequestBody requestUsername = RequestBody.create(MediaType.parse("multipart/form-data"), username);
-                            RequestBody requestFName = RequestBody.create(MediaType.parse("multipart/form-data"), "hello");
-                            RequestBody requestLName = RequestBody.create(MediaType.parse("multipart/form-data"), "hello");
-                            RequestBody requestPwd = RequestBody.create(MediaType.parse("multipart/form-data"), pwd);
-                            RequestBody requestRank = RequestBody.create(MediaType.parse("multipart/form-data"), rank);
-                            RequestBody requestAgency = RequestBody.create(MediaType.parse("multipart/form-data"), agency);
-                            RequestBody requestCurrentPort = RequestBody.create(MediaType.parse("multipart/form-data"), currentport);
-                            RequestBody requestDesirePort = RequestBody.create(MediaType.parse("multipart/form-data"), desireport);
-                            RequestBody requestOffice = RequestBody.create(MediaType.parse("multipart/form-data"), office);
-                            RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
-                            RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
-
-                            Call<JsonObject> call = apiInterface.register(requestEmail, requestUsername, requestFName, requestLName, requestPwd, requestRank, requestAgency,
-                                    requestCurrentPort, requestDesirePort, requestOffice, requestFToken, requestDeviceId);
-
-                            call.enqueue(new Callback<JsonObject>() {
+                    public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                        if (task.getResult().getSignInMethods().size() == 0){
+                            // email not existed
+                            LayoutInflater factory = LayoutInflater.from(SignupActivity.this);
+                            final View submitDialogView = factory.inflate(R.layout.termslayout, null);
+                            final AlertDialog submitDialog = new AlertDialog.Builder(SignupActivity.this).create();
+                            submitDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            submitDialog.setView(submitDialogView);
+                            TextView tv_term = submitDialogView.findViewById(R.id.tv_terms);
+                            tv_term.setMovementMethod(new ScrollingMovementMethod());
+                            submitDialogView.findViewById(R.id.tv_close_btn).setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                                    String response_body = response.body().toString();
+                                public void onClick(View v) {
+                                    mAuth.createUserWithEmailAndPassword(email, pwd).addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                            if (!task.isSuccessful()) {
+                                                Toast.makeText(SignupActivity.this, "Sign up Failed: " + task.getException().toString(), Toast.LENGTH_LONG).show();
+                                            } else {
+                                                Map<String, Object> result = new HashMap<>();
+                                                result.put("email", email);
+                                                result.put("name", username);
 
-                                    try {
-                                        JSONObject dataObject = new JSONObject(response_body);
-                                        Boolean isSuccess = dataObject.getBoolean("success");
-                                        String msg = dataObject.getString("message");
-                                        Toast.makeText(SignupActivity.this, msg, Toast.LENGTH_LONG).show();
-                                        if (isSuccess) {
-                                            String id = dataObject.getString("id");
-                                            SharedPreferences idPref = getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
-                                            idPref.edit().putString("Id", id).commit();
+                                                dbRef.child("users").child(mAuth.getCurrentUser().getUid()).updateChildren(result);
 
-                                            String username = dataObject.getString("username");
-                                            SharedPreferences usernamePref = getSharedPreferences(PREF_USERNAME, Context.MODE_PRIVATE);
-                                            usernamePref.edit().putString("Username", username).commit();
+                                                ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
+                                                RequestBody requestEmail = RequestBody.create(MediaType.parse("multipart/form-data"), email);
+                                                RequestBody requestUsername = RequestBody.create(MediaType.parse("multipart/form-data"), username);
+                                                RequestBody requestFName = RequestBody.create(MediaType.parse("multipart/form-data"), "hello");
+                                                RequestBody requestLName = RequestBody.create(MediaType.parse("multipart/form-data"), "hello");
+                                                RequestBody requestPwd = RequestBody.create(MediaType.parse("multipart/form-data"), pwd);
+                                                RequestBody requestRank = RequestBody.create(MediaType.parse("multipart/form-data"), rank);
+                                                RequestBody requestAgency = RequestBody.create(MediaType.parse("multipart/form-data"), agency);
+                                                RequestBody requestCurrentPort = RequestBody.create(MediaType.parse("multipart/form-data"), currentport);
+                                                RequestBody requestDesirePort = RequestBody.create(MediaType.parse("multipart/form-data"), desireport);
+                                                RequestBody requestOffice = RequestBody.create(MediaType.parse("multipart/form-data"), office);
+                                                RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
+                                                RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
 
-                                            String email = dataObject.getString("email");
-                                            SharedPreferences emailPref = getSharedPreferences(PREF_EMAIL, Context.MODE_PRIVATE);
-                                            emailPref.edit().putString("Email", email).commit();
+                                                Call<JsonObject> call = apiInterface.register(requestEmail, requestUsername, requestFName, requestLName, requestPwd, requestRank, requestAgency,
+                                                        requestCurrentPort, requestDesirePort, requestOffice, requestFToken, requestDeviceId);
 
-                                            String rank = dataObject.getString("rank");
-                                            SharedPreferences rankPref = getSharedPreferences(PREF_RANK, Context.MODE_PRIVATE);
-                                            rankPref.edit().putString("Rank", rank).commit();
+                                                call.enqueue(new Callback<JsonObject>() {
+                                                    @Override
+                                                    public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                                                        String response_body = response.body().toString();
 
-                                            String agency = dataObject.getString("agency");
-                                            SharedPreferences agencyPref = getSharedPreferences(PREF_AGENCY, Context.MODE_PRIVATE);
-                                            agencyPref.edit().putString("Agency", agency).commit();
+                                                        try {
+                                                            JSONObject dataObject = new JSONObject(response_body);
+                                                            Boolean isSuccess = dataObject.getBoolean("success");
+                                                            String msg = dataObject.getString("message");
+                                                            Toast.makeText(SignupActivity.this, msg, Toast.LENGTH_LONG).show();
+                                                            if (isSuccess) {
+                                                                String id = dataObject.getString("id");
+                                                                SharedPreferences idPref = getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
+                                                                idPref.edit().putString("Id", id).commit();
 
-                                            String office = dataObject.getString("office");
-                                            SharedPreferences officePref = getSharedPreferences(PREF_OFFICE, Context.MODE_PRIVATE);
-                                            officePref.edit().putString("Office", office).commit();
+                                                                String username = dataObject.getString("username");
+                                                                SharedPreferences usernamePref = getSharedPreferences(PREF_USERNAME, Context.MODE_PRIVATE);
+                                                                usernamePref.edit().putString("Username", username).commit();
 
-                                            String currentport = dataObject.getString("current_port");
-                                            SharedPreferences currentportPref = getSharedPreferences(PREF_CURRENTPORT, Context.MODE_PRIVATE);
-                                            currentportPref.edit().putString("CurrentPort", currentport).commit();
+                                                                String email = dataObject.getString("email");
+                                                                SharedPreferences emailPref = getSharedPreferences(PREF_EMAIL, Context.MODE_PRIVATE);
+                                                                emailPref.edit().putString("Email", email).commit();
 
-                                            String desireport = dataObject.getString("desire_port");
-                                            SharedPreferences desireportPref = getSharedPreferences(PREF_DESIREPORT, Context.MODE_PRIVATE);
-                                            desireportPref.edit().putString("DesirePort", desireport).commit();
+                                                                String rank = dataObject.getString("rank");
+                                                                SharedPreferences rankPref = getSharedPreferences(PREF_RANK, Context.MODE_PRIVATE);
+                                                                rankPref.edit().putString("Rank", rank).commit();
 
-                                            String ftoken = dataObject.getString("ftoken");
-                                            SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
-                                            ftokenPref.edit().putString("FToken", ftoken).commit();
+                                                                String agency = dataObject.getString("agency");
+                                                                SharedPreferences agencyPref = getSharedPreferences(PREF_AGENCY, Context.MODE_PRIVATE);
+                                                                agencyPref.edit().putString("Agency", agency).commit();
 
-                                            Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-                                            startActivity(intent);
-                                            finish();
+                                                                String office = dataObject.getString("office");
+                                                                SharedPreferences officePref = getSharedPreferences(PREF_OFFICE, Context.MODE_PRIVATE);
+                                                                officePref.edit().putString("Office", office).commit();
+
+                                                                String currentport = dataObject.getString("current_port");
+                                                                SharedPreferences currentportPref = getSharedPreferences(PREF_CURRENTPORT, Context.MODE_PRIVATE);
+                                                                currentportPref.edit().putString("CurrentPort", currentport).commit();
+
+                                                                String desireport = dataObject.getString("desire_port");
+                                                                SharedPreferences desireportPref = getSharedPreferences(PREF_DESIREPORT, Context.MODE_PRIVATE);
+                                                                desireportPref.edit().putString("DesirePort", desireport).commit();
+
+                                                                String ftoken = dataObject.getString("ftoken");
+                                                                SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
+                                                                ftokenPref.edit().putString("FToken", ftoken).commit();
+
+                                                                Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            }
+                                                        } catch (JSONException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                        loadingIndicator.hideProgress();
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<JsonObject> call, Throwable t) {
+                                                        Toast.makeText(SignupActivity.this, t.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                                        loadingIndicator.hideProgress();
+                                                    }
+                                                });
+                                            }
                                         }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    loadingIndicator.hideProgress();
-                                }
-
-                                @Override
-                                public void onFailure(Call<JsonObject> call, Throwable t) {
-                                    Toast.makeText(SignupActivity.this, t.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                                    loadingIndicator.hideProgress();
+                                    });
+                                    submitDialog.dismiss();
                                 }
                             });
+                            submitDialog.show();
+                        }else {
+                            // email existed
+                            Toast.makeText(SignupActivity.this, "The email address is already in use by another account.", Toast.LENGTH_LONG).show();
+                            loadingIndicator.hideProgress();
                         }
                     }
                 });
