@@ -41,12 +41,15 @@ import retrofit2.Response;
 public class ConnectionsFragment extends Fragment {
 
     public static final String PREF_ID = "PREFERENCE_ID";
+    public static final String PREF_BADGECOUNT = "PREFERENCE_BADGECOUNT";
 
     private RecyclerView connectionRecyclerView;
     private ConnectionAdapter connectionAdapter;
     private TextView tv_exact_btn, tv_possible_btn;
     private View exact_underline, possible_underline;
     private ImageView iv_chat_btn;
+    private TextView tv_badgecount;
+
     private ArrayList<Integer> avatarList = new ArrayList<>();
     private ArrayList<String> idList = new ArrayList<>();
     private ArrayList<String> nameList = new ArrayList<>();
@@ -68,6 +71,7 @@ public class ConnectionsFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_connections, container, false);
 
         initComponent(root);
+        initData();
         setConnectionRecyclerView(root);
         onClickExactMatchBtn(root);
         onClickPossibleMatchBtn(root);
@@ -81,10 +85,22 @@ public class ConnectionsFragment extends Fragment {
         exact_underline = root.findViewById(R.id.v_exact_underline);
         tv_possible_btn = root.findViewById(R.id.tv_possible_btn);
         possible_underline = root.findViewById(R.id.v_possible_underline);
+        tv_badgecount = root.findViewById(R.id.tv_badgecount);
 
         exact_underline.setVisibility(View.VISIBLE);
         possible_underline.setVisibility(View.INVISIBLE);
         loadingIndicator = LoadingIndicator.getInstance();
+    }
+
+    private void initData() {
+        SharedPreferences badgePref = getActivity().getSharedPreferences(PREF_BADGECOUNT, Context.MODE_PRIVATE);
+        Integer badgeCount = badgePref.getInt("BadgeCount", 0);
+        if (badgeCount == 0) {
+            tv_badgecount.setVisibility(View.INVISIBLE);
+        } else {
+            tv_badgecount.setVisibility(View.VISIBLE);
+            tv_badgecount.setText(badgeCount.toString());
+        }
     }
 
     private void removeData() {

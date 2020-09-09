@@ -28,6 +28,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.gson.JsonObject;
 import com.stackrage.gofeds.api.ApiClient;
 import com.stackrage.gofeds.api.ApiInterface;
@@ -73,6 +75,8 @@ public class SignupActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference dbRef;
 
+    private String ftoken;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,6 +117,16 @@ public class SignupActivity extends AppCompatActivity {
         for (int i = 0; i < portList.length; i++) {
             currentCheckList.add(false);
             desireCheckList.add(false);
+        }
+        final SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
+        ftoken = ftokenPref.getString("FToken", "");
+        if (ftoken.isEmpty()) {
+            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                @Override
+                public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                    ftoken = task.getResult().getToken();
+                }
+            });
         }
     }
 
@@ -355,7 +369,7 @@ public class SignupActivity extends AppCompatActivity {
                                                 RequestBody requestCurrentPort = RequestBody.create(MediaType.parse("multipart/form-data"), currentport);
                                                 RequestBody requestDesirePort = RequestBody.create(MediaType.parse("multipart/form-data"), desireport);
                                                 RequestBody requestOffice = RequestBody.create(MediaType.parse("multipart/form-data"), office);
-                                                RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
+                                                RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), ftoken);
                                                 RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
 
                                                 Call<JsonObject> call = apiInterface.register(requestEmail, requestUsername, requestFName, requestLName, requestPwd, requestRank, requestAgency,

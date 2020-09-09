@@ -21,6 +21,7 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 public class SplashActivity extends AppCompatActivity {
 
     public static final String PREF_ID = "PREFERENCE_ID";
+    public static final String PREF_BADGECOUNT = "PREFERENCE_BADGECOUNT";
     private static int splashInterval = 2000;
 
     @Override
@@ -29,15 +30,18 @@ public class SplashActivity extends AppCompatActivity {
 
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(R.layout.activity_splash);
+        if (getIntent().getExtras() != null) {
+            for (String key : getIntent().getExtras().keySet()) {
+                Object value = getIntent().getExtras().get(key);
+                Log.e("FirebaseDataReceiver", "Key: " + key + " Value: " + value);
+                if (key.equals("badge")) {
+                    SharedPreferences badgePref = getSharedPreferences(PREF_BADGECOUNT, Context.MODE_PRIVATE);
+                    badgePref.edit().putInt("BadgeCount", Integer.parseInt(value.toString())).commit();
+                }
 
-        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-            @Override
-            public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                Log.d("Token-----: ", task.getResult().getToken());
             }
-        });
+        }
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

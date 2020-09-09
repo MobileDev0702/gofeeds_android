@@ -13,11 +13,15 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.gson.JsonObject;
 import com.stackrage.gofeds.api.ApiClient;
 import com.stackrage.gofeds.api.ApiInterface;
@@ -55,12 +59,15 @@ public class LoginActivity extends AppCompatActivity {
     LoadingIndicator loadingIndicator;
     private DatabaseReference dbRef;
 
+    private String ftoken;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         initComponent();
+        initData();
         onClickLoginBtn();
         onClickSignupBtn();
     }
@@ -73,6 +80,19 @@ public class LoginActivity extends AppCompatActivity {
         tv_login_btn = findViewById(R.id.tv_login_btn);
         tv_signup = findViewById(R.id.tv_signup);
         loadingIndicator = LoadingIndicator.getInstance();
+    }
+
+    private void initData() {
+        final SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
+        ftoken = ftokenPref.getString("FToken", "");
+        if (ftoken.isEmpty()) {
+            FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                @Override
+                public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                    ftoken = task.getResult().getToken();
+                }
+            });
+        }
     }
 
     private void onClickLoginBtn() {
@@ -96,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                 ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
                 RequestBody requestUsername = RequestBody.create(MediaType.parse("multipart/form-data"), username);
                 RequestBody requestPwd = RequestBody.create(MediaType.parse("multipart/form-data"), pwd);
-                RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
+                RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), ftoken);
                 RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
 
                 Call<JsonObject> call = apiInterface.login(requestUsername, requestPwd, requestFToken, requestDeviceId);
