@@ -1,12 +1,21 @@
 package com.stackrage.gofeds.ui.profile;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.media.ExifInterface;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,25 +26,37 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.util.IOUtils;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.Picasso;
 import com.stackrage.gofeds.LoadingIndicator;
 import com.stackrage.gofeds.LoginActivity;
 import com.stackrage.gofeds.PortAdapter;
 import com.stackrage.gofeds.R;
 import com.stackrage.gofeds.SignupActivity;
+import com.stackrage.gofeds.Util;
 import com.stackrage.gofeds.api.ApiClient;
 import com.stackrage.gofeds.api.ApiInterface;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,6 +74,10 @@ public class ProfileFragment extends Fragment {
     public static final String PREF_DESIREPORT = "PREFERENCE_DESIREPORT";
     public static final String PREF_FTOKEN = "PREFERENCE_FTOKEN";
 
+    static final int REQUEST_IMAGE_CAPTURE = 1000;
+    static final int REQUEST_IMAGE_LIBRARY = 1001;
+    public static final int MY_PERMISSIONS_REQUEST_READ_STOREAGE_AND_CAMERA = 24;
+
     private ImageView iv_profile, iv_logout_btn;
     private TextView tv_username;
     private TextView tv_rank, tv_agency, tv_office, tv_currentport, tv_desiredport, tv_save_btn;
@@ -66,6 +91,9 @@ public class ProfileFragment extends Fragment {
     private ArrayList<Boolean> desireCheckList = new ArrayList<>();
     private int currentportSelIndex;
 
+    private Uri uri;
+    private File file;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -73,6 +101,7 @@ public class ProfileFragment extends Fragment {
         initComponent(root);
         initData();
         loadProfileData();
+//        onClickProfileImageBtn();
         onClickRankBtn();
         onClickAgencyBtn();
         onClickOfficeBtn();
@@ -122,11 +151,19 @@ public class ProfileFragment extends Fragment {
                     Boolean isSuccess = dataObject.getBoolean("success");
                     if (isSuccess) {
                         String username = dataObject.getString("username");
+                        String image = dataObject.getString("image");
                         String rank = dataObject.getString("rank");
                         String agency = dataObject.getString("agency");
                         String office = dataObject.getString("office");
                         String currentport = dataObject.getString("current_port");
                         String desireport = dataObject.getString("desire_port");
+                        String imageUrl = "";
+                        if (image.isEmpty()) {
+                            imageUrl = "http://stackrage.com/gofeeds/images/user1.png";
+                        } else {
+                            imageUrl = "http://stackrage.com/gofeeds/images/" + image;
+                        }
+//                        Picasso.get().load(imageUrl).into(iv_profile);
                         tv_username.setText(username);
                         tv_rank.setTextColor(Color.BLACK);
                         tv_rank.setText(rank);
@@ -154,6 +191,141 @@ public class ProfileFragment extends Fragment {
                 loadingIndicator.hideProgress();
             }
         });
+    }
+
+    private void onClickProfileImageBtn() {
+        iv_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final android.app.AlertDialog.Builder pictureDialog = new android.app.AlertDialog.Builder(getActivity());
+                pictureDialog.setTitle("Select Action");
+                String[] pictureDialogItems = {"Select photo from gallery", "Capture photo from camera", "Cancel"};
+
+                pictureDialog.setItems(pictureDialogItems, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                takeFromGallery();
+                                break;
+                            case 1:
+                                takeFromCamera();
+                                break;
+                            case 2:
+                                dialog.dismiss();
+                                break;
+                        }
+                    }
+                });
+                pictureDialog.show();
+            }
+        });
+    }
+
+    private void takeFromGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_IMAGE_LIBRARY);
+    }
+
+    private void takeFromCamera() {
+        // Check if this device has a camera
+        boolean permission1 = true;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            permission1 = getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        boolean permission2 = true;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            permission2 = getActivity().checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        if(permission1 && permission2) {
+            uri = getCaptureImageOutputUri();
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            intent.putExtra("return-data", true);
+            startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+        }
+        else {
+            Toast.makeText(getContext(), "You need to set permissions", Toast.LENGTH_LONG).show();
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_READ_STOREAGE_AND_CAMERA);
+        }
+    }
+
+    private Uri getCaptureImageOutputUri() {
+        Uri outputFileUri = null;
+        File getImage = getActivity().getExternalFilesDir("");
+        File savedImageFile = new File(getImage.getPath(), "profile.png");
+        if (getImage != null) {
+            if(Build.VERSION.SDK_INT < 23) {
+                outputFileUri = Uri.fromFile(savedImageFile);
+            }
+            else {
+                outputFileUri = FileProvider.getUriForFile(getContext(), getActivity().getApplicationContext().getPackageName() + ".my.package.name.provider", savedImageFile);
+            }
+        }
+        return outputFileUri;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
+                File getImage = getActivity().getExternalFilesDir("");
+                File file =  new File(getImage.getPath(), "profile.png");
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = false;
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                options.inDither = true;
+                options.inSampleSize = 8;
+
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+
+                try {
+                    ExifInterface ei = new ExifInterface(file.getAbsolutePath());
+                    int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+                    switch (orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            bitmap = Util.RotateBitmap(bitmap, 90);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            bitmap = Util.RotateBitmap(bitmap, 180);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            bitmap = Util.RotateBitmap(bitmap, 270);
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                iv_profile.setImageBitmap(bitmap);
+                if (bitmap != null) {
+                    bitmap.recycle();
+                    bitmap = null;
+                }
+            } else {
+                Bitmap bm = null;
+                if (data != null) {
+                    try {
+                        uri = data.getData();
+                        bm = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                iv_profile.setImageBitmap(bm);
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void onClickRankBtn() {
@@ -292,6 +464,15 @@ public class ProfileFragment extends Fragment {
                 loadingIndicator.showProgress(getContext());
                 SharedPreferences idPref = getActivity().getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
                 String id = idPref.getString("Id", "");
+
+                MultipartBody.Part body = null;
+                if (uri != null) {
+                    file = new File(getFilePathFromURI(getContext(), uri));
+
+                    RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
+                    body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+                }
+
                 String rank = tv_rank.getText().toString();
                 String agency = tv_agency.getText().toString();
                 String currentport = tv_currentport.getText().toString();
@@ -334,6 +515,42 @@ public class ProfileFragment extends Fragment {
                 });
             }
         });
+    }
+
+    public static String getFilePathFromURI(Context context, Uri contentUri) {
+        //copy file and send new file path
+        String fileName = getFileName(contentUri);
+        File rootDataDir = context.getFilesDir();
+        if (!TextUtils.isEmpty(fileName)) {
+            File copyFile = new File( rootDataDir + File.separator + fileName + ".jpg");
+            copy(context, contentUri, copyFile);
+            return copyFile.getAbsolutePath();
+        }
+        return null;
+    }
+
+    public static String getFileName(Uri uri) {
+        if (uri == null) return null;
+        String fileName = null;
+        String path = uri.getPath();
+        int cut = path.lastIndexOf('/');
+        if (cut != -1) {
+            fileName = path.substring(cut + 1);
+        }
+        return fileName;
+    }
+
+    public static void copy(Context context, Uri srcUri, File dstFile) {
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(srcUri);
+            if (inputStream == null) return;
+            OutputStream outputStream = new FileOutputStream(dstFile);
+            IOUtils.copyStream(inputStream, outputStream);
+            inputStream.close();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void onClickLogoutBtn() {

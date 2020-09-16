@@ -89,6 +89,8 @@ public class AnswerListActivity extends AppCompatActivity {
 
     private void loadData() {
         String quesId = getIntent().getStringExtra("Question_Id");
+        String questionText = getIntent().getStringExtra("QuestionText");
+        tv_question.setText(questionText);
         ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
         RequestBody requestQuesId = RequestBody.create(MediaType.parse("multipart/form-data"), quesId);
 
@@ -102,8 +104,6 @@ public class AnswerListActivity extends AppCompatActivity {
                     JSONObject respObject = new JSONObject(response_body);
                     Boolean isSuccess = respObject.getBoolean("success");
                     if (isSuccess) {
-                        String question = respObject.getString("question");
-                        tv_question.setText(question);
                         JSONArray dataArray = respObject.getJSONArray("answers");
                         for (int i = 0; i < dataArray.length(); i++) {
                             JSONObject dataObject = dataArray.getJSONObject(i);

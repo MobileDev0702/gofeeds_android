@@ -3,6 +3,10 @@
     package="com.stackrage.gofeds">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -13,6 +17,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+        <activity android:name=".ForgotPwdActivity"></activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.my.package.name.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
         <service
             android:name=".notification.MyFirebaseMessageService"
             android:exported="false">
@@ -20,22 +36,18 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <service
-            android:name=".notification.MyFirebaseInstanceIDService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-            </intent-filter>
-        </service>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id"/>
+            android:value="@string/default_notification_channel_id" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorPrimary" />
-        <activity android:name=".ChatDetailActivity"></activity>
+
+        <activity android:name=".ChatDetailActivity" />
         <activity android:name=".FeedDetailActivity" />
         <activity android:name=".UserProfileActivity" />
         <activity android:name=".AnswerListActivity" />

@@ -60,7 +60,8 @@ public class AddQuestionActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String question = et_question.getText().toString();
-                if (question.isEmpty()) {
+                String replacedText = question.replace("'", "\\'");
+                if (replacedText.isEmpty()) {
                     Toast.makeText(AddQuestionActivity.this, "Please enter your question", Toast.LENGTH_LONG).show();
                 } else {
                     loadingIndicator.showProgress(AddQuestionActivity.this);
@@ -68,7 +69,7 @@ public class AddQuestionActivity extends AppCompatActivity {
                     String id = idPref.getString("Id", "");
                     ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
                     RequestBody requestId = RequestBody.create(MediaType.parse("multipart/form-data"), id);
-                    RequestBody requestQues = RequestBody.create(MediaType.parse("multipart/form-data"), question);
+                    RequestBody requestQues = RequestBody.create(MediaType.parse("multipart/form-data"), replacedText);
 
                     Call<JsonObject> call = apiInterface.addfaq(requestId, requestQues);
                     call.enqueue(new Callback<JsonObject>() {

@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,15 +24,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonObject;
 import com.stackrage.gofeds.api.ApiClient;
 import com.stackrage.gofeds.api.ApiInterface;
 import com.stackrage.gofeds.notification.APIService;
 import com.stackrage.gofeds.notification.Client;
-import com.stackrage.gofeds.notification.Data;
 import com.stackrage.gofeds.notification.MyResponse;
-import com.stackrage.gofeds.notification.Sender;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +47,6 @@ import retrofit2.Response;
 public class ChatDetailActivity extends AppCompatActivity {
 
     public static final String PREF_ID = "PREFERENCE_ID";
-    public static final String PREF_USERNAME = "PREFERENCE_USERNAME";
     public static final String PREF_BADGECOUNT = "PREFERENCE_BADGECOUNT";
 
     private ImageView iv_back_btn;
@@ -67,7 +62,7 @@ public class ChatDetailActivity extends AppCompatActivity {
     private String roomId, receiverId, receiverUser;
     private String myId;
     private Integer isUser;
-    private String ftoken;
+    private String ftoken, deviceId;
 
     APIService apiService;
 
@@ -151,6 +146,7 @@ public class ChatDetailActivity extends AppCompatActivity {
                     Boolean isSuccess = dataObject.getBoolean("success");
                     if (isSuccess) {
                         ftoken = dataObject.getString("ftoken");
+                        deviceId = dataObject.getString("device_id");
                     } else {
                         String msg = dataObject.getString("message");
                         Toast.makeText(ChatDetailActivity.this, msg, Toast.LENGTH_LONG).show();
@@ -277,14 +273,16 @@ public class ChatDetailActivity extends AppCompatActivity {
                                         jsonObject.addProperty("mSender_id", "123");
                                         jsonObject.addProperty("sound", "enabled");
 
-                                        JsonObject notiObj = new JsonObject();
-                                        notiObj.addProperty("body", et_bottom_comment.getText().toString());
-                                        notiObj.addProperty("badge", badgeCount);
-                                        notiObj.addProperty("mSender_id", "123");
-                                        notiObj.addProperty("sound", "default");
-                                        notiObj.addProperty("title", "You have a new message");
+                                        if (deviceId.equals("iPhone")) {
+                                            JsonObject notiObj = new JsonObject();
+                                            notiObj.addProperty("body", et_bottom_comment.getText().toString());
+                                            notiObj.addProperty("badge", badgeCount);
+                                            notiObj.addProperty("mSender_id", "123");
+                                            notiObj.addProperty("sound", "default");
+                                            notiObj.addProperty("title", "You have a new message");
 
-                                        jsonObject.add("notification", notiObj);
+                                            jsonObject.add("notification", notiObj);
+                                        }
 
                                         JsonObject dataObj = new JsonObject();
                                         dataObj.addProperty("mSender_id", myId);

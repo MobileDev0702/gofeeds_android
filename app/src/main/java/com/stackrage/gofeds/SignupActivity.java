@@ -58,6 +58,7 @@ public class SignupActivity extends AppCompatActivity {
     public static final String PREF_CURRENTPORT = "PREFERENCE_CURRENTPORT";
     public static final String PREF_DESIREPORT = "PREFERENCE_DESIREPORT";
     public static final String PREF_FTOKEN = "PREFERENCE_FTOKEN";
+    public static final String PREF_DEVICEID = "PREFERENCE_DEVICEID";
 
     private ImageView iv_back_btn;
     private EditText et_username, et_pwd, et_email;
@@ -370,7 +371,7 @@ public class SignupActivity extends AppCompatActivity {
                                                 RequestBody requestDesirePort = RequestBody.create(MediaType.parse("multipart/form-data"), desireport);
                                                 RequestBody requestOffice = RequestBody.create(MediaType.parse("multipart/form-data"), office);
                                                 RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), ftoken);
-                                                RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
+                                                RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "Android");
 
                                                 Call<JsonObject> call = apiInterface.register(requestEmail, requestUsername, requestFName, requestLName, requestPwd, requestRank, requestAgency,
                                                         requestCurrentPort, requestDesirePort, requestOffice, requestFToken, requestDeviceId);
@@ -421,6 +422,10 @@ public class SignupActivity extends AppCompatActivity {
                                                                 String ftoken = dataObject.getString("ftoken");
                                                                 SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
                                                                 ftokenPref.edit().putString("FToken", ftoken).commit();
+
+                                                                String deviceid = dataObject.getString("device_id");
+                                                                SharedPreferences deviceIdPref = getSharedPreferences(PREF_DEVICEID, Context.MODE_PRIVATE);
+                                                                deviceIdPref.edit().putString("DeviceId", deviceid).commit();
 
                                                                 Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                                                                 startActivity(intent);

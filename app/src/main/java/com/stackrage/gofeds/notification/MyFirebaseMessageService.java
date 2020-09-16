@@ -17,7 +17,6 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.stackrage.gofeds.ChatDetailActivity;
-import com.stackrage.gofeds.MainActivity;
 import com.stackrage.gofeds.R;
 
 import java.util.Map;
@@ -28,6 +27,11 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
     private static final String TAG = "FirebaseMsgService";
 
     @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+    }
+
+    @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         sendNotification(remoteMessage);
@@ -36,7 +40,6 @@ public class MyFirebaseMessageService extends FirebaseMessagingService {
     private void sendNotification(RemoteMessage remoteMessage) {
         String body = "", title = "";
         Integer badgeCount = 0;
-        RemoteMessage.Notification noti = remoteMessage.getNotification();
         Map<String, String> data = remoteMessage.getData();
         title = data.get("title");
         body = data.get("body");

@@ -49,6 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     public static final String PREF_CURRENTPORT = "PREFERENCE_CURRENTPORT";
     public static final String PREF_DESIREPORT = "PREFERENCE_DESIREPORT";
     public static final String PREF_FTOKEN = "PREFERENCE_FTOKEN";
+    public static final String PREF_DEVICEID = "PREFERENCE_DEVICEID";
 
     private EditText et_username, et_pwd;
     private Switch sw_remember;
@@ -68,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
 
         initComponent();
         initData();
+        onClickForgotPwd();
         onClickLoginBtn();
         onClickSignupBtn();
     }
@@ -95,6 +97,16 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    private void onClickForgotPwd() {
+        tv_forgotpwd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent  = new Intent(LoginActivity.this, ForgotPwdActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
     private void onClickLoginBtn() {
         tv_login_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
                 RequestBody requestUsername = RequestBody.create(MediaType.parse("multipart/form-data"), username);
                 RequestBody requestPwd = RequestBody.create(MediaType.parse("multipart/form-data"), pwd);
                 RequestBody requestFToken = RequestBody.create(MediaType.parse("multipart/form-data"), ftoken);
-                RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "test");
+                RequestBody requestDeviceId = RequestBody.create(MediaType.parse("multipart/form-data"), "Android");
 
                 Call<JsonObject> call = apiInterface.login(requestUsername, requestPwd, requestFToken, requestDeviceId);
                 call.enqueue(new Callback<JsonObject>() {
@@ -166,6 +178,10 @@ public class LoginActivity extends AppCompatActivity {
                                 String ftoken = dataObject.getString("ftoken");
                                 SharedPreferences ftokenPref = getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
                                 ftokenPref.edit().putString("FToken", ftoken).commit();
+
+                                String deviceid = dataObject.getString("device_id");
+                                SharedPreferences deviceIdPref = getSharedPreferences(PREF_DEVICEID, Context.MODE_PRIVATE);
+                                deviceIdPref.edit().putString("DeviceId", deviceid).commit();
 
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 startActivity(intent);

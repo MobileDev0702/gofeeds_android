@@ -59,6 +59,7 @@ public class ForumAdapter extends RecyclerView.Adapter<ForumAdapter.MyViewHolder
             public void onClick(View view) {
                 Intent intent = new Intent(context, AnswerListActivity.class);
                 intent.putExtra("Question_Id", quesIdList.get(position));
+                intent.putExtra("QuestionText", questionList.get(position));
                 context.startActivity(intent);
             }
         });

@@ -2,6 +2,7 @@ package com.stackrage.gofeds.api;
 
 import com.google.gson.JsonObject;
 
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Multipart;
@@ -41,7 +42,7 @@ public interface ApiInterface {
     Call<JsonObject> updateprofile(@Part("id") RequestBody id,
                                    @Part("firstname") RequestBody fname,
                                    @Part("lastname") RequestBody lname,
-                                   @Part("image") RequestBody image,
+                                   @Part("image") RequestBody image, //@Part MultipartBody.Part image,
                                    @Part("rank") RequestBody rank,
                                    @Part("agency") RequestBody agency,
                                    @Part("current_port") RequestBody currentport,
