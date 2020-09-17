@@ -48,6 +48,7 @@ public class ChatDetailActivity extends AppCompatActivity {
 
     public static final String PREF_ID = "PREFERENCE_ID";
     public static final String PREF_BADGECOUNT = "PREFERENCE_BADGECOUNT";
+    public static final String PREF_IMAGE = "PREFERENCE_IMAGE";
 
     private ImageView iv_back_btn;
     private TextView tv_username;
@@ -62,7 +63,7 @@ public class ChatDetailActivity extends AppCompatActivity {
     private String roomId, receiverId, receiverUser;
     private String myId;
     private Integer isUser;
-    private String ftoken, deviceId;
+    private String ftoken, deviceId, image;
 
     APIService apiService;
 
@@ -147,6 +148,7 @@ public class ChatDetailActivity extends AppCompatActivity {
                     if (isSuccess) {
                         ftoken = dataObject.getString("ftoken");
                         deviceId = dataObject.getString("device_id");
+                        image = dataObject.getString("image");
                     } else {
                         String msg = dataObject.getString("message");
                         Toast.makeText(ChatDetailActivity.this, msg, Toast.LENGTH_LONG).show();
@@ -183,12 +185,16 @@ public class ChatDetailActivity extends AppCompatActivity {
                 resultOppo.put("messageId",msgId);
                 dbRef.child("messages").child("chatUsers").child(receiverId).child(roomId).updateChildren(resultOppo);
 
+                String avatar = "";
                 if (myId.equals(senderId)) {
                     isUser = 0;
+                    SharedPreferences imagePref = getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+                    avatar = imagePref.getString("Image", "");
                 } else {
                     isUser = 1;
+                    avatar = image;
                 }
-                messageInfos.add(new MessageInfo(msg, isUser));
+                messageInfos.add(new MessageInfo(msg, isUser, avatar));
                 messageAdapter.notifyDataSetChanged();
                 messageRecyclerView.smoothScrollToPosition(messageInfos.size() - 1);
             }

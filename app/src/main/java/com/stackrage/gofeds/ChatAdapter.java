@@ -12,7 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> {
 
@@ -37,8 +41,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ChatAdapter.MyViewHolder holder, final int position) {
-//        Picasso.get().load(photoList.get(position)).into(holder.image);
-        holder.image.setImageResource(R.drawable.user);
+        Picasso.get().load(userInfos.get(position).getPhoto()).into(holder.image);
+//        holder.image.setImageResource(R.drawable.user);
         holder.tv_username.setText(userInfos.get(position).getName());
         holder.tv_lastchat.setText(userInfos.get(position).getLastMsg());
         holder.tv_time.setText(userInfos.get(position).getTime());
@@ -62,7 +66,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder> 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
-        ImageView image;
+        CircleImageView image;
         TextView tv_username;
         TextView tv_lastchat;
         TextView tv_time;

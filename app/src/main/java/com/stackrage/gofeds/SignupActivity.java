@@ -59,6 +59,7 @@ public class SignupActivity extends AppCompatActivity {
     public static final String PREF_DESIREPORT = "PREFERENCE_DESIREPORT";
     public static final String PREF_FTOKEN = "PREFERENCE_FTOKEN";
     public static final String PREF_DEVICEID = "PREFERENCE_DEVICEID";
+    public static final String PREF_IMAGE = "PREFERENCE_IMAGE";
 
     private ImageView iv_back_btn;
     private EditText et_username, et_pwd, et_email;
@@ -426,6 +427,10 @@ public class SignupActivity extends AppCompatActivity {
                                                                 String deviceid = dataObject.getString("device_id");
                                                                 SharedPreferences deviceIdPref = getSharedPreferences(PREF_DEVICEID, Context.MODE_PRIVATE);
                                                                 deviceIdPref.edit().putString("DeviceId", deviceid).commit();
+
+                                                                String image = dataObject.getString("image");
+                                                                SharedPreferences imagePref = getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+                                                                imagePref.edit().putString("Image", image).commit();
 
                                                                 Intent intent = new Intent(SignupActivity.this, MainActivity.class);
                                                                 startActivity(intent);

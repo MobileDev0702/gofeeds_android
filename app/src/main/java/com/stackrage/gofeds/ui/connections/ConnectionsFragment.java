@@ -50,7 +50,7 @@ public class ConnectionsFragment extends Fragment {
     private ImageView iv_chat_btn;
     private TextView tv_badgecount;
 
-    private ArrayList<Integer> avatarList = new ArrayList<>();
+    private ArrayList<String> avatarList = new ArrayList<>();
     private ArrayList<String> idList = new ArrayList<>();
     private ArrayList<String> nameList = new ArrayList<>();
     private ArrayList<String> locationList = new ArrayList<>();
@@ -139,7 +139,15 @@ public class ConnectionsFragment extends Fragment {
                             String userid = dataObject.getString("user_id");
                             String username = dataObject.getString("username");
                             String currentport = dataObject.getString("current_port");
-                            avatarList.add(R.drawable.user);
+                            String image = dataObject.getString("image");
+                            String imageUrl = "";
+                            if (image.isEmpty()) {
+                                imageUrl = "http://stackrage.com/gofeeds/images/user1.png";
+                            } else {
+                                imageUrl = "http://stackrage.com/gofeeds/images/" + image;
+                            }
+
+                            avatarList.add(imageUrl);
                             idList.add(userid);
                             nameList.add(username);
                             locationList.add(currentport);

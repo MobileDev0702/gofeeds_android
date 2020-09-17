@@ -1,7 +1,7 @@
 package com.stackrage.gofeds;
 
 public class UserInfo {
-    private Integer photo;
+    private String photo;
     private String receiverId;
     private String name;
     private String lastMsg;
@@ -9,7 +9,7 @@ public class UserInfo {
     private String roomId;
     private Long timestamp;
 
-    public UserInfo(Integer photo, String receiver, String name, String msg, String time, String roomid, Long timestamp) {
+    public UserInfo(String photo, String receiver, String name, String msg, String time, String roomid, Long timestamp) {
         this.photo = photo;
         this.receiverId = receiver;
         this.name = name;
@@ -19,7 +19,7 @@ public class UserInfo {
         this.timestamp = timestamp;
     }
 
-    public Integer getPhoto() { return this.photo; }
+    public String getPhoto() { return this.photo; }
 
     public String getReceiverId() { return this.receiverId; }
 

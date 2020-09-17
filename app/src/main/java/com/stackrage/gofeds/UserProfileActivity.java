@@ -21,6 +21,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 import com.stackrage.gofeds.api.ApiClient;
 import com.stackrage.gofeds.api.ApiInterface;
 
@@ -40,6 +42,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
     public static final String PREF_ID = "PREFERENCE_ID";
     public static final String PREF_USERNAME = "PREFERENCE_USERNAME";
+    public static final String PREF_IMAGE = "PREFERENCE_IMAGE";
 
     private ImageView iv_back_btn;
     private TextView tv_username;
@@ -50,6 +53,7 @@ public class UserProfileActivity extends AppCompatActivity {
     private LoadingIndicator loadingIndicator;
     private DatabaseReference dbRef;
     private String myId, userId, roomId, myname, username;
+    private String userImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +106,14 @@ public class UserProfileActivity extends AppCompatActivity {
                         String office = dataObject.getString("office");
                         String currentport = dataObject.getString("current_port");
                         String desireport = dataObject.getString("desire_port");
+                        userImage = dataObject.getString("image");
+                        String imageUrl = "";
+                        if (userImage.isEmpty()) {
+                            imageUrl = "http://stackrage.com/gofeeds/images/user1.png";
+                        } else {
+                            imageUrl = "http://stackrage.com/gofeeds/images/" + userImage;
+                        }
+                        Picasso.get().load(imageUrl).networkPolicy(NetworkPolicy.NO_CACHE).into(iv_avatar);
                         tv_username.setText(username);
                         tv_rank.setTextColor(Color.BLACK);
                         tv_rank.setText(rank);
@@ -185,6 +197,14 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void initChatUserDB(DatabaseReference roomRef) {
+        String tempUrl = "";
+        SharedPreferences imagePref = getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+        String myImage = imagePref.getString("Image", "");
+        if (myImage.isEmpty()) {
+            tempUrl = "http://stackrage.com/gofeeds/images/user.png";
+        } else {
+            tempUrl = "http://stackrage.com/gofeeds/images/" + myImage;
+        }
         Map<String, Object> chatUserResult = new HashMap<>();
         chatUserResult.put("chatDeletedForUser", 0);
         chatUserResult.put("conversationId", roomRef.getKey());
@@ -200,8 +220,15 @@ public class UserProfileActivity extends AppCompatActivity {
         chatUserResult.put("receiverUser", username);
         chatUserResult.put("senderId", Integer.parseInt(myId));
         chatUserResult.put("timestamp", ServerValue.TIMESTAMP);
+        chatUserResult.put("image", tempUrl);
         roomRef.updateChildren(chatUserResult);
 
+        String oppoUrl = "";
+        if (userImage.isEmpty()) {
+            oppoUrl = "http://stackrage.com/gofeeds/images/user.png";
+        } else {
+            oppoUrl = "http://stackrage.com/gofeeds/images/" + userImage;
+        }
         Map<String, Object> chatOppoResult = new HashMap<>();
         chatOppoResult.put("chatDeletedForUser", 0);
         chatOppoResult.put("conversationId", roomRef.getKey());
@@ -217,6 +244,7 @@ public class UserProfileActivity extends AppCompatActivity {
         chatOppoResult.put("receiverUser", myname);
         chatOppoResult.put("senderId", Integer.parseInt(userId));
         chatOppoResult.put("timestamp", ServerValue.TIMESTAMP);
+        chatOppoResult.put("image", oppoUrl);
         dbRef.child("messages").child("chatUsers").child(userId).child(roomRef.getKey()).updateChildren(chatOppoResult);
     }
 }

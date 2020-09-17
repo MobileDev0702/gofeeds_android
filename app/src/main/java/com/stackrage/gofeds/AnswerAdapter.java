@@ -12,19 +12,23 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.MyViewHolder> {
 
     private Context context;
     private LayoutInflater inflater;
-    private ArrayList<Integer> avatarList;
+    private ArrayList<String> avatarList;
     private ArrayList<String> usernameList;
     private ArrayList<String> answerList;
     private ArrayList<Integer> voteList;
     private ArrayList<String> idList;
 
-    public AnswerAdapter(Context ctx, ArrayList<Integer> avatars, ArrayList<String> usernames, ArrayList<String> answers, ArrayList<Integer> votes, ArrayList<String> ids) {
+    public AnswerAdapter(Context ctx, ArrayList<String> avatars, ArrayList<String> usernames, ArrayList<String> answers, ArrayList<Integer> votes, ArrayList<String> ids) {
         inflater = LayoutInflater.from(ctx);
         this.context = ctx;
         this.avatarList = avatars;
@@ -45,8 +49,8 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.MyViewHold
 
     @Override
     public void onBindViewHolder(@NonNull AnswerAdapter.MyViewHolder holder, final int position) {
-//        Picasso.get().load(photoList.get(position)).into(holder.image);
-        holder.image.setImageResource(R.drawable.user);
+        Picasso.get().load(avatarList.get(position)).into(holder.image);
+//        holder.image.setImageResource(R.drawable.user);
         holder.tv_username.setText(usernameList.get(position));
         holder.tv_answer.setText(answerList.get(position));
         holder.tv_vote.setText(voteList.get(position).toString());
@@ -80,7 +84,7 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.MyViewHold
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
-        ImageView image;
+        CircleImageView image;
         TextView tv_username;
         TextView tv_answer;
         ImageView iv_upvote;

@@ -12,21 +12,24 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.stackrage.gofeds.R;
 import com.stackrage.gofeds.UserProfileActivity;
 
 import java.util.ArrayList;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ConnectionAdapter extends RecyclerView.Adapter<ConnectionAdapter.MyViewHolder> {
 
     private Context context;
     private LayoutInflater inflater;
-    private ArrayList<Integer> photoList;
+    private ArrayList<String> photoList;
     private ArrayList<String> idList;
     private ArrayList<String> usernameList;
     private ArrayList<String> locationList;
 
-    public ConnectionAdapter(Context ctx, ArrayList<Integer> photos, ArrayList<String> ids, ArrayList<String> names, ArrayList<String> locations) {
+    public ConnectionAdapter(Context ctx, ArrayList<String> photos, ArrayList<String> ids, ArrayList<String> names, ArrayList<String> locations) {
         inflater = LayoutInflater.from(ctx);
         this.context = ctx;
         this.photoList = photos;
@@ -46,8 +49,8 @@ public class ConnectionAdapter extends RecyclerView.Adapter<ConnectionAdapter.My
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
-//        Picasso.get().load(photoList.get(position)).into(holder.image);
-        holder.image.setImageResource(R.drawable.user);
+        Picasso.get().load(photoList.get(position)).into(holder.image);
+//        holder.image.setImageResource(R.drawable.user);
         holder.tv_username.setText(usernameList.get(position));
         holder.tv_location.setText(locationList.get(position));
         holder.cardView.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +71,7 @@ public class ConnectionAdapter extends RecyclerView.Adapter<ConnectionAdapter.My
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         CardView cardView;
-        ImageView image;
+        CircleImageView image;
         TextView tv_username;
         TextView tv_location;
 

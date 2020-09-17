@@ -44,7 +44,7 @@ public class ForumFragment extends Fragment {
     private RecyclerView forumRecyclerView;
     private ForumAdapter forumAdapter;
 
-    private ArrayList<Integer> avatarList = new ArrayList<>();
+    private ArrayList<String> avatarList = new ArrayList<>();
     private ArrayList<String> nameList = new ArrayList<>();
     private ArrayList<String> questionList = new ArrayList<>();
     private ArrayList<String> answerList = new ArrayList<>();
@@ -98,7 +98,14 @@ public class ForumFragment extends Fragment {
                             String question = dataObject.getString("question");
                             String answer = dataObject.getString("answer");
                             String quesid = dataObject.getString("question_id");
-                            avatarList.add(R.drawable.user);
+                            String image = dataObject.getString("image");
+                            String imageUrl = "";
+                            if (image.isEmpty()) {
+                                imageUrl = "http://stackrage.com/gofeeds/images/user1.png";
+                            } else {
+                                imageUrl = "http://stackrage.com/gofeeds/images/" + image;
+                            }
+                            avatarList.add(imageUrl);
                             nameList.add(username);
                             questionList.add(question);
                             answerList.add(answer);

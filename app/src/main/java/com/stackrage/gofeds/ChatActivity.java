@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.provider.CallLog;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -45,6 +47,7 @@ public class ChatActivity extends AppCompatActivity {
         setChatRecyclerView();
         loadData();
         onClickBackBtn();
+        Toast.makeText(this, FirebaseAuth.getInstance().getCurrentUser().getEmail(), Toast.LENGTH_LONG).show();
     }
 
     private void initFirebase() {
@@ -65,12 +68,13 @@ public class ChatActivity extends AppCompatActivity {
                     String receiverUser = chatSnapshot.child("receiverUser").getValue().toString();
                     String lastMsg = chatSnapshot.child("lastMessage").getValue().toString();
                     String conversationId = chatSnapshot.child("conversationId").getValue().toString();
+                    String image = chatSnapshot.child("image").getValue().toString();
 
                     String timestamp = chatSnapshot.child("lastMessageTimeStamp").getValue().toString();
                     SimpleDateFormat sfd = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
                     String date = sfd.format(Long.parseLong(timestamp));
 
-                    UserInfo info = new UserInfo(R.drawable.user, receiverId, receiverUser, lastMsg, date, conversationId, Long.parseLong(timestamp));
+                    UserInfo info = new UserInfo(image, receiverId, receiverUser, lastMsg, date, conversationId, Long.parseLong(timestamp));
                     userInfos.add(info);
                 }
                 Collections.sort(userInfos, new Comparator<UserInfo>() {
@@ -86,7 +90,7 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                loadingIndicator.hideProgress();
             }
         });
     }

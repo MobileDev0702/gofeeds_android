@@ -44,7 +44,7 @@ public class AnswerListActivity extends AppCompatActivity {
     private TextView tv_writeanswer;
     private EditText et_answer;
 
-    private ArrayList<Integer> avatarList = new ArrayList<>();
+    private ArrayList<String> avatarList = new ArrayList<>();
     private ArrayList<String> nameList = new ArrayList<>();
     private ArrayList<String> answerList = new ArrayList<>();
     private ArrayList<Integer> voteList = new ArrayList<>();
@@ -112,7 +112,14 @@ public class AnswerListActivity extends AppCompatActivity {
                             Integer vote = dataObject.getInt("vote");
                             String id = dataObject.getString("user_id");
                             String answerid = dataObject.getString("answer_id");
-                            avatarList.add(R.drawable.user);
+                            String image = dataObject.getString("image");
+                            String imageUrl = "";
+                            if (image.isEmpty()) {
+                                imageUrl = "http://stackrage.com/gofeeds/images/user1.png";
+                            } else {
+                                imageUrl = "http://stackrage.com/gofeeds/images/" + image;
+                            }
+                            avatarList.add(imageUrl);
                             nameList.add(username);
                             answerList.add(answer);
                             voteList.add(vote);

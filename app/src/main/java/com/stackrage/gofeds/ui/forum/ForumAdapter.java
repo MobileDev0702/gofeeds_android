@@ -13,22 +13,25 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.stackrage.gofeds.AnswerListActivity;
 import com.stackrage.gofeds.R;
 
 import java.util.ArrayList;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ForumAdapter extends RecyclerView.Adapter<ForumAdapter.MyViewHolder> {
 
     private Context context;
     private LayoutInflater inflater;
-    private ArrayList<Integer> avatarList;
+    private ArrayList<String> avatarList;
     private ArrayList<String> usernameList;
     private ArrayList<String> questionList;
     private ArrayList<String> answerList;
     private ArrayList<String> quesIdList;
 
-    public ForumAdapter(Context ctx, ArrayList<Integer> avatars, ArrayList<String> names, ArrayList<String> questions, ArrayList<String> answers, ArrayList<String> quesids) {
+    public ForumAdapter(Context ctx, ArrayList<String> avatars, ArrayList<String> names, ArrayList<String> questions, ArrayList<String> answers, ArrayList<String> quesids) {
         inflater = LayoutInflater.from(ctx);
         this.context = ctx;
         this.avatarList = avatars;
@@ -49,8 +52,8 @@ public class ForumAdapter extends RecyclerView.Adapter<ForumAdapter.MyViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ForumAdapter.MyViewHolder holder, final int position) {
-//        Picasso.get().load(photoList.get(position)).into(holder.image);
-        holder.iv_avatar.setImageResource(R.drawable.user);
+        Picasso.get().load(avatarList.get(position)).into(holder.iv_avatar);
+//        holder.iv_avatar.setImageResource(R.drawable.user);
         holder.tv_username.setText(usernameList.get(position));
         holder.tv_question.setText(questionList.get(position));
         holder.tv_answer.setText(answerList.get(position));
@@ -73,7 +76,7 @@ public class ForumAdapter extends RecyclerView.Adapter<ForumAdapter.MyViewHolder
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout layout;
-        ImageView iv_avatar;
+        CircleImageView iv_avatar;
         TextView tv_username;
         TextView tv_question;
         TextView tv_answer;

@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.common.util.IOUtils;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.stackrage.gofeds.LoadingIndicator;
 import com.stackrage.gofeds.LoginActivity;
@@ -73,6 +74,7 @@ public class ProfileFragment extends Fragment {
     public static final String PREF_CURRENTPORT = "PREFERENCE_CURRENTPORT";
     public static final String PREF_DESIREPORT = "PREFERENCE_DESIREPORT";
     public static final String PREF_FTOKEN = "PREFERENCE_FTOKEN";
+    public static final String PREF_IMAGE = "PREFERENCE_IMAGE";
 
     static final int REQUEST_IMAGE_CAPTURE = 1000;
     static final int REQUEST_IMAGE_LIBRARY = 1001;
@@ -91,6 +93,7 @@ public class ProfileFragment extends Fragment {
     private ArrayList<Boolean> desireCheckList = new ArrayList<>();
     private int currentportSelIndex;
 
+    private String id;
     private Uri uri;
     private File file;
 
@@ -101,7 +104,7 @@ public class ProfileFragment extends Fragment {
         initComponent(root);
         initData();
         loadProfileData();
-//        onClickProfileImageBtn();
+        onClickProfileImageBtn();
         onClickRankBtn();
         onClickAgencyBtn();
         onClickOfficeBtn();
@@ -130,13 +133,12 @@ public class ProfileFragment extends Fragment {
             currentCheckList.add(false);
             desireCheckList.add(false);
         }
+        SharedPreferences idPref = getActivity().getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
+        id = idPref.getString("Id", "");
     }
 
     private void loadProfileData() {
         loadingIndicator.showProgress(getContext());
-        SharedPreferences idPref = getActivity().getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
-        String id = idPref.getString("Id", "");
-
         ApiInterface apiInterface = ApiClient.getClient().create(ApiInterface.class);
         RequestBody requestId = RequestBody.create(MediaType.parse("multipart/form-data"), id);
 
@@ -163,7 +165,7 @@ public class ProfileFragment extends Fragment {
                         } else {
                             imageUrl = "http://stackrage.com/gofeeds/images/" + image;
                         }
-//                        Picasso.get().load(imageUrl).into(iv_profile);
+                        Picasso.get().load(imageUrl).networkPolicy(NetworkPolicy.NO_CACHE).into(iv_profile);
                         tv_username.setText(username);
                         tv_rank.setTextColor(Color.BLACK);
                         tv_rank.setText(rank);
@@ -255,7 +257,7 @@ public class ProfileFragment extends Fragment {
     private Uri getCaptureImageOutputUri() {
         Uri outputFileUri = null;
         File getImage = getActivity().getExternalFilesDir("");
-        File savedImageFile = new File(getImage.getPath(), "profile.png");
+        File savedImageFile = new File(getImage.getPath(), "image" + id);
         if (getImage != null) {
             if(Build.VERSION.SDK_INT < 23) {
                 outputFileUri = Uri.fromFile(savedImageFile);
@@ -273,7 +275,7 @@ public class ProfileFragment extends Fragment {
         try {
             if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK) {
                 File getImage = getActivity().getExternalFilesDir("");
-                File file =  new File(getImage.getPath(), "profile.png");
+                File file =  new File(getImage.getPath(), "image" + id);
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = false;
@@ -303,10 +305,10 @@ public class ProfileFragment extends Fragment {
                     e.printStackTrace();
                 }
                 iv_profile.setImageBitmap(bitmap);
-                if (bitmap != null) {
-                    bitmap.recycle();
-                    bitmap = null;
-                }
+//                if (bitmap != null) {
+//                    bitmap.recycle();
+//                    bitmap = null;
+//                }
             } else {
                 Bitmap bm = null;
                 if (data != null) {
@@ -462,8 +464,6 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 loadingIndicator.showProgress(getContext());
-                SharedPreferences idPref = getActivity().getSharedPreferences(PREF_ID, Context.MODE_PRIVATE);
-                String id = idPref.getString("Id", "");
 
                 MultipartBody.Part body = null;
                 if (uri != null) {
@@ -483,14 +483,14 @@ public class ProfileFragment extends Fragment {
                 RequestBody requestId = RequestBody.create(MediaType.parse("multipart/form-data"), id);
                 RequestBody requestFName = RequestBody.create(MediaType.parse("multipart/form-data"), "");
                 RequestBody requestLName = RequestBody.create(MediaType.parse("multipart/form-data"), "");
-                RequestBody requestImage = RequestBody.create(MediaType.parse("multipart/form-data"), "");
+//                RequestBody requestImage = RequestBody.create(MediaType.parse("multipart/form-data"), "");
                 RequestBody requestRank = RequestBody.create(MediaType.parse("multipart/form-data"), rank);
                 RequestBody requestAgency = RequestBody.create(MediaType.parse("multipart/form-data"), agency);
                 RequestBody requestCurrentPort = RequestBody.create(MediaType.parse("multipart/form-data"), currentport);
                 RequestBody requestDesirePort = RequestBody.create(MediaType.parse("multipart/form-data"), desireport);
                 RequestBody requestOffice = RequestBody.create(MediaType.parse("multipart/form-data"), office);
 
-                Call<JsonObject> call = apiInterface.updateprofile(requestId, requestFName, requestLName, requestImage, requestRank, requestAgency,
+                Call<JsonObject> call = apiInterface.updateprofile(requestId, requestFName, requestLName, body, requestRank, requestAgency,
                         requestCurrentPort, requestDesirePort, requestOffice);
                 call.enqueue(new Callback<JsonObject>() {
                     @Override
@@ -499,8 +499,34 @@ public class ProfileFragment extends Fragment {
 
                         try {
                             JSONObject dataObject = new JSONObject(response_body);
+                            Boolean isSuccess = dataObject.getBoolean("success");
                             String msg = dataObject.getString("message");
                             Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+                            if (isSuccess) {
+                                String rank = dataObject.getString("rank");
+                                SharedPreferences rankPref = getActivity().getSharedPreferences(PREF_RANK, Context.MODE_PRIVATE);
+                                rankPref.edit().putString("Rank", rank).commit();
+
+                                String agency = dataObject.getString("agency");
+                                SharedPreferences agencyPref = getActivity().getSharedPreferences(PREF_AGENCY, Context.MODE_PRIVATE);
+                                agencyPref.edit().putString("Agency", agency).commit();
+
+                                String office = dataObject.getString("office");
+                                SharedPreferences officePref = getActivity().getSharedPreferences(PREF_OFFICE, Context.MODE_PRIVATE);
+                                officePref.edit().putString("Office", office).commit();
+
+                                String currentport = dataObject.getString("current_port");
+                                SharedPreferences currentportPref = getActivity().getSharedPreferences(PREF_CURRENTPORT, Context.MODE_PRIVATE);
+                                currentportPref.edit().putString("CurrentPort", currentport).commit();
+
+                                String desireport = dataObject.getString("desire_port");
+                                SharedPreferences desireportPref = getActivity().getSharedPreferences(PREF_DESIREPORT, Context.MODE_PRIVATE);
+                                desireportPref.edit().putString("DesirePort", desireport).commit();
+
+                                String image = dataObject.getString("image");
+                                SharedPreferences imagePref = getActivity().getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+                                imagePref.edit().putString("Image", image).commit();
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -517,12 +543,12 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    public static String getFilePathFromURI(Context context, Uri contentUri) {
+    public String getFilePathFromURI(Context context, Uri contentUri) {
         //copy file and send new file path
         String fileName = getFileName(contentUri);
         File rootDataDir = context.getFilesDir();
         if (!TextUtils.isEmpty(fileName)) {
-            File copyFile = new File( rootDataDir + File.separator + fileName + ".jpg");
+            File copyFile = new File( rootDataDir + File.separator + "image" + id + ".png");
             copy(context, contentUri, copyFile);
             return copyFile.getAbsolutePath();
         }
@@ -603,6 +629,9 @@ public class ProfileFragment extends Fragment {
 
         SharedPreferences ftokenPref = getContext().getSharedPreferences(PREF_FTOKEN, Context.MODE_PRIVATE);
         ftokenPref.edit().remove("FToken").commit();
+
+        SharedPreferences imagePref = getContext().getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+        imagePref.edit().remove("Image").commit();
 
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         startActivity(intent);
