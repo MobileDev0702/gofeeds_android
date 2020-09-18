@@ -173,22 +173,36 @@ public class ChatDetailActivity extends AppCompatActivity {
                 String senderId = snapshot.child("userId").getValue().toString();
                 String msgId = snapshot.getKey();
 
+                String userImage = "";
+                if (image.isEmpty()) {
+                    userImage = "http://stackrage.com/gofeeds/images/user.png";
+                } else {
+                    userImage = image;
+                }
                 Map<String, Object> result = new HashMap<>();
                 result.put("lastMessage", msg);
                 result.put("lastMessageTimeStamp", ServerValue.TIMESTAMP);
                 result.put("messageId",msgId);
+                result.put("image", userImage);
                 dbRef.child("messages").child("chatUsers").child(myId).child(roomId).updateChildren(result);
 
+                String myImage = "";
+                SharedPreferences imagePref = getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
+                if (imagePref.getString("Image", "").isEmpty()) {
+                    myImage = "http://stackrage.com/gofeeds/images/user.png";
+                } else {
+                    myImage = "http://stackrage.com/gofeeds/images/" + imagePref.getString("Image", "");
+                }
                 Map<String, Object> resultOppo = new HashMap<>();
                 resultOppo.put("lastMessage", msg);
                 resultOppo.put("lastMessageTimeStamp", ServerValue.TIMESTAMP);
                 resultOppo.put("messageId",msgId);
+                resultOppo.put("image", myImage);
                 dbRef.child("messages").child("chatUsers").child(receiverId).child(roomId).updateChildren(resultOppo);
 
                 String avatar = "";
                 if (myId.equals(senderId)) {
                     isUser = 0;
-                    SharedPreferences imagePref = getSharedPreferences(PREF_IMAGE, Context.MODE_PRIVATE);
                     avatar = imagePref.getString("Image", "");
                 } else {
                     isUser = 1;
